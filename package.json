@@ -1,0 +1,33 @@
+{
+  "name": "sa-carousel",
+  "version": "1.0.0-pre.0",
+  "description": "Sa carousel component.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:doc": "cross-env BUILD_ENV=doc vite build",
+    "preview": "vite preview",
+    "lint": "eslint --fix --ext .ts,.tsx ."
+  },
+  "dependencies": {
+    "vue": "^3.2.31"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.18",
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "@vitejs/plugin-vue": "^2.2.0",
+    "@vitejs/plugin-vue-jsx": "^1.3.7",
+    "@vue/eslint-config-typescript": "^9.1.0",
+    "autoprefixer": "^10.4.2",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.9.0",
+    "eslint-plugin-vue": "^8.4.1",
+    "postcss": "^8.4.6",
+    "sass": "^1.49.7",
+    "tailwindcss": "^3.0.23",
+    "typescript": "^4.5.5",
+    "vite": "^2.8.3",
+    "vue-tsc": "^0.29.8"
+  }
+}
