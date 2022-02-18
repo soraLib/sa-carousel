@@ -6,7 +6,7 @@ export function flatten(
   filterCommentNode: boolean = true,
   result: VNode[] = []
 ): VNode[] {
-  vNodes.forEach((vNode) => {
+  vNodes.forEach(vNode => {
     if (vNode === null) return;
     if (typeof vNode !== 'object') {
       if (typeof vNode === 'string' || typeof vNode === 'number') {
@@ -49,4 +49,25 @@ export function getDisplayIndex(
       : current === length - 1
         ? 0
         : current - 1;
+}
+
+export function getNextIndex(
+  current: number,
+  length: number,
+  duplicatedable?: boolean
+): number | null {
+  if (current > length - 1) return null;
+
+  return current === length - 1 ? (duplicatedable ? 0 : null) : current + 1;
+}
+
+export function getRealIndex(
+  current: number,
+  duplicatedable?: boolean
+): number {
+  return !duplicatedable ? current : current + 1;
+}
+
+export function clampValue(value: number, min: number, max: number): number {
+  return value < min ? min : value > max ? max : value;
 }

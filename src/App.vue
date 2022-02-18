@@ -1,13 +1,13 @@
 
 <template>
-  <div class="w-3/5 mx-auto h-full" style="min-width: calc(472px + 0.5rem);">
+  <div class="mx-auto h-full bg-slate-50" style="min-width: calc(472px + 0.5rem);">
 
     <header class="flex justify-center items-center">
       <h1 class="font-bold text-lg py-4">Sa Carousel</h1>
     </header>
 
-    <main>
-      <SCarousel>
+    <main class="flex justify-center">
+      <SCarousel style="width: 800px;">
         <SCarouselItem>
           <template #content>A content</template>
 
@@ -18,6 +18,12 @@
           <template #content>B content</template>
 
           <div>image slot B</div>
+        </SCarouselItem>
+
+        <SCarouselItem>
+          <template #content>C content</template>
+
+          <div>image slot C</div>
         </SCarouselItem>
       </SCarousel>
     </main>
