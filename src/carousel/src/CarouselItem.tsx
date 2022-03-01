@@ -32,10 +32,6 @@ export default defineComponent({
         <Transition /* background transition props */>
           {slots.default && <div class="slide__item-background">{slots.default()}</div>}
         </Transition>
-
-        <Transition /* content transition props */>
-          {slots.content && <div class="slide__item-content">{slots.content()}</div>}
-        </Transition>
       </div>
     );
   }

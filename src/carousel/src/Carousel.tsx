@@ -45,7 +45,14 @@ export default defineComponent({
       const { length } = slidesEls;
       if (!length) return [];
 
-      return slidesEls.map((slide) => calculateSize(slide));
+      return slidesEls.map((slide) => {
+        const size = calculateSize(slide);
+
+        return {
+          width: size.width + 8,
+          height: size.height
+        };
+      });
     });
 
     const slideTranlatesRef = computed(() => {
@@ -228,9 +235,15 @@ export default defineComponent({
     return (
       <div ref="selfElRef" class="carousel">
         <Transition name="carousel-fade">
-          <tempalte class="carousel__background" key={this.realIndex}>
-            { currentBackgroundSlot.default() } // current slide item background
-          </tempalte>
+          <div class="carousel__current" key={this.realIndex}>
+            <div class="carousel__current-background">
+              { currentBackgroundSlot.default() } {/* current slide item background */}
+            </div>
+
+            <div class="carousel__current-content" style={{width: 'calc(100% - 300px)'}}>
+              { currentBackgroundSlot.content() } {/* current slide item content */}
+            </div>
+          </div>
         </Transition>
 
         <div
