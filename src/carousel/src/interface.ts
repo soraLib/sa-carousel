@@ -8,6 +8,8 @@ export interface CarouselMethodsInjection {
   isNext: (slide: number | HTMLElement) => boolean
   isActive: (slide: number | HTMLElement) => boolean
   getCurrentIndex: () => number
+  addSlide: (slide?: HTMLElement) => void
+  removeSlide: (slide?: HTMLElement) => void
   onCarouselItemClick: (index: number, event: MouseEvent) => void
 }
 

@@ -1,0 +1,9 @@
+.carousel-fade-enter-active,
+.carousel-fade-leave-active {
+  transition: all .5s ease-out;
+}
+
+.carousel-fade-enter-from,
+.carousel-fade-leave-to {
+  opacity: 0;
+}

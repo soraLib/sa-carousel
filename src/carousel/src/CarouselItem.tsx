@@ -1,4 +1,4 @@
-import { defineComponent, inject, Transition } from 'vue';
+import { defineComponent, inject, onMounted, ref, Transition } from 'vue';
 
 import { carouselMethodsInjectionKey } from './interface';
 
@@ -10,6 +10,14 @@ export default defineComponent({
     if (!SCarousel) {
       throw new Error('[sa-carousel]: `s-carousel-item` must be placed inside `s-carousel`');
     }
+
+    const selfElRef = ref<HTMLElement>();
+
+    onMounted(() => SCarousel.addSlide(selfElRef.value));
+
+    return {
+      selfElRef
+    };
   },
   render() {
     const {
@@ -17,18 +25,17 @@ export default defineComponent({
     } = this;
 
     return (
-      <div>
+      <div
+        class="slide__item"
+        ref="selfElRef"
+      >
         <Transition /* background transition props */>
-          {slots.default?.({
-
-          })}
+          {slots.default && <div class="slide__item-background">{slots.default()}</div>}
         </Transition>
 
         <Transition /* content transition props */>
-          {slots.content?.({
-
-          })}
-        </Transition>,
+          {slots.content && <div class="slide__item-content">{slots.content()}</div>}
+        </Transition>
       </div>
     );
   }

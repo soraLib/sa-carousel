@@ -7,23 +7,23 @@
     </header>
 
     <main class="flex justify-center">
-      <SCarousel style="width: 800px;">
+      <SCarousel style="width: 800px; height: 400px;">
         <SCarouselItem>
           <template #content>A content</template>
 
-          <div>image slot A</div>
+          <img src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel2.jpeg" />
         </SCarouselItem>
 
         <SCarouselItem>
           <template #content>B content</template>
 
-          <div>image slot B</div>
+          <img src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel1.jpeg" />
         </SCarouselItem>
 
         <SCarouselItem>
           <template #content>C content</template>
 
-          <div>image slot C</div>
+          <img src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel3.jpeg" />
         </SCarouselItem>
       </SCarousel>
     </main>

@@ -1,6 +1,6 @@
-import { cloneVNode, CSSProperties, defineComponent, provide, Ref, ref, Transition, VNode } from 'vue';
+import { cloneVNode, computed, CSSProperties, defineComponent, onMounted, onUpdated, provide, Ref, ref, Transition, VNode } from 'vue';
 import { carouselMethodsInjectionKey } from './interface';
-import { clampValue, flatten, getDisplayIndex, getNextIndex, getRealIndex } from './utils';
+import { calculateSize, clampValue, flatten, getDisplayIndex, getNextIndex, getPrevIndex, getRealIndex } from './utils';
 
 import SCarouselArrow from './CarouselArrow';
 
@@ -33,10 +33,38 @@ export default defineComponent({
     const virtualIndexRef = ref(initializeIndex);
     const realIndexRef = ref(initializeIndex);
 
-    const speedRef = ref(0);
-
     const displayIndexRef = ref(initializeIndex);
     const totalViewRef = ref(5);
+
+    const speedRef = ref(400);
+    const sizeAxisRef = { value: 'width' } as const;
+
+    const slideSizesRef = computed(() => {
+      const { value: slidesEls } = slidesElsRef;
+
+      const { length } = slidesEls;
+      if (!length) return [];
+
+      return slidesEls.map((slide) => calculateSize(slide));
+    });
+
+    const slideTranlatesRef = computed(() => {
+      const { value: slideSizes } = slideSizesRef;
+
+      const { length } = slideSizes;
+      if (!length) return [];
+
+      const { value: axis } = sizeAxisRef;
+
+      let previousTranslate = 0;
+
+      return slideSizes.map(({ [axis]: slideSize }) => {
+        const translate = previousTranslate;
+        previousTranslate += slideSize ;
+
+        return translate;
+      });
+    });
 
     // Reality methods
     function toRealIndex(index: number, speed = speedRef.value): void {
@@ -54,6 +82,11 @@ export default defineComponent({
         translateTo(index, speed);
       }
     }
+    function getRealPrevIndex(
+      index: number = realIndexRef.value
+    ): number | null {
+      return getPrevIndex(index, totalViewRef.value);
+    }
     function getRealNextIndex(
       index: number = realIndexRef.value
     ): number | null {
@@ -63,11 +96,12 @@ export default defineComponent({
     // Translate to
     function to(index: number): void {}
     function prev(): void {
-      console.log('prev');
+      const prevIndex = getRealPrevIndex();
+      if (prevIndex !== null) {
+        toRealIndex(prevIndex);
+      }
     }
     function next(): void {
-      console.log('next');
-
       const nextIndex = getRealNextIndex();
       if (nextIndex !== null) {
         toRealIndex(nextIndex);
@@ -76,7 +110,7 @@ export default defineComponent({
 
     // Translate to
     const translateStyleRef: Ref<CSSProperties> = ref({});
-    // let inTransition = false;
+    let inTransition = false;
     function updateTranslate(translate: number, speed = 0): void {
       translateStyleRef.value = Object.assign({}, {
         transform: `translateX(${-translate}px)`,
@@ -88,11 +122,10 @@ export default defineComponent({
     }
     function translateTo(index: number, speed = speedRef.value): void {
       const translate = getTranslate(index);
-      // if (translate !== previousTranslate && speed > 0) {
-      //   inTransition = true;
-      // }
+      if (speed > 0) {
+        inTransition = true;
+      }
       updateTranslate(translate, speed);
-      // previousTranslate = getTranslate(realIndexRef.value);
     }
     function getTranslate(index: number): number {
       let translate;
@@ -105,30 +138,66 @@ export default defineComponent({
 
       return translate;
     }
+    function getLastViewTranslate(): number {
+      const { value: translates } = slideTranlatesRef;
+
+      return translates[totalViewRef.value - 1] || 0;
+    }
 
     // Provide
-    function addSlide(slide?: HTMLElement): void {}
+    function addSlide(slide?: HTMLElement): void {
+      if (!slide) return;
+      slidesElsRef.value.push(slide);
+    }
     function removeSlide(slide?: HTMLElement): void {}
     function onCarouselItemClick(index: number, event: MouseEvent): void {}
 
     const carouselMethods = {
       to,
-      prev,
-      next,
+      prev: () => {
+        // wait transition end
+        if (!inTransition) prev();
+      },
+      next: () => {
+        // wait transition end
+        if (!inTransition) next();
+      },
       addSlide,
       removeSlide,
       onCarouselItemClick
     };
 
-    provide(carouselMethodsInjectionKey, carouselMethods as any /* TODO: */);
+    provide(carouselMethodsInjectionKey, carouselMethods);
+
+    function handleTransitionEnd(): void {
+      const { value: virtualIndex } = virtualIndexRef;
+      const { value: realIndex } = realIndexRef;
+
+      translateStyleRef.value.transitionDuration = '0ms';
+      if (inTransition && virtualIndex !== realIndex) {
+        translateTo(realIndex, 0);
+      }
+
+      inTransition = false;
+    }
+
+    onMounted(() => {
+      toRealIndex(initializeIndex + 1);
+    });
 
     return {
-      selfElRef
+      selfElRef,
+      displayIndex: displayIndexRef,
+      realIndex: realIndexRef,
+      slideVNodes: slideVNodesRef,
+      translateStyle: translateStyleRef,
+      handleTransitionEnd
     };
   },
   render() {
     const {
       $slots: { default: defaultSlot }
+
     } = this;
 
     const children = (defaultSlot && flatten(defaultSlot())) || [];
@@ -140,8 +209,6 @@ export default defineComponent({
       ));
     }
 
-    console.log('children', children);
-
     const { length: realLength } = slides;
     if (realLength > 1 /* && this.duplicatedable */) {
       slides.push(duplicateSlide(slides[0], 0, 'append'));
@@ -150,16 +217,44 @@ export default defineComponent({
       );
     }
 
+    this.slideVNodes.value = slides;
+
+    const currentSlide = slides[this.realIndex];
+    const currentBackgroundSlot = currentSlide.children as {
+      content: () => VNode,
+      default: () => VNode
+    };
+
     return (
       <div ref="selfElRef" class="carousel">
-        <div role="listbox" class="slides">
-          {
-            slides.map((slide, i) => (
-              <div key={i} class="slide">
-                {slide}
-              </div>
-            ))
-          }
+        <Transition name="carousel-fade">
+          <tempalte class="carousel__background" key={this.realIndex}>
+            { currentBackgroundSlot.default() } // current slide item background
+          </tempalte>
+        </Transition>
+
+        <div
+          class="carousel__main"
+          style={{
+            width: '300px',
+            left: 'calc(100% - 300px)'
+          }}
+        >
+          <div
+            role="listbox"
+            class="slides"
+            style={this.translateStyle}
+            onTransitionend={this.handleTransitionEnd}
+          >
+            {
+              slides.map((slide, i) => (
+                <div key={i} class="slide">
+                  {slide}
+                </div>
+              ))
+            }
+          </div>
+
         </div>
 
         <SCarouselArrow />
